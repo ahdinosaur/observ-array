@@ -1,11 +1,9 @@
 var Observ = require("observ")
+var Immutable = require("immutable")
 
 // circular dep between ArrayMethods & this file
 module.exports = ObservArray
 
-var splice = require("./splice.js")
-var put = require("./put.js")
-var transaction = require("./transaction.js")
 var ArrayMethods = require("./array-methods.js")
 var addListener = require("./add-listener.js")
 
@@ -31,30 +29,27 @@ var addListener = require("./add-listener.js")
         properties that are the observables
 */
 function ObservArray(initialList) {
-    // list is the internal mutable list observ instances that
-    // all methods on `obs` dispatch to.
-    var list = initialList
-    var initialState = []
+    var vector = Immutable.Vector.from(initialList);
 
     // copy state out of initialList into initialState
-    list.forEach(function (observ, index) {
-        initialState[index] = typeof observ === "function" ?
-            observ() : observ
-    })
+    var initialState = Immutable.Vector.from(
+      initialList.map(function (observ, index) {
+        return typeof observ === "function" ?
+          observ() : observ
+      })
+    )
 
     var obs = Observ(initialState)
-    obs.splice = splice
 
-    obs.get = get
-    obs.getLength = getLength
-    obs.put = put
-    obs.transaction = transaction
+    obs._vector = vector
+    
+    obs._obsSet = obs.set
+    obs = ArrayMethods(obs, vector)
+    obs._arraySet = obs.set
 
-    // you better not mutate this list directly
-    // this is the list of observs instances
-    obs._list = list
+    obs.set = set
 
-    var removeListeners = list.map(function (observ) {
+    var removeListeners = vector.map(function (observ) {
         return typeof observ === "function" ?
             addListener(obs, observ) :
             null
@@ -65,10 +60,15 @@ function ObservArray(initialList) {
     // listeners. Which causes rage bugs
     obs._removeListeners = removeListeners
 
-    return ArrayMethods(obs, list)
+    return obs
 }
 
-function get(index) {
+function set() {
+    if (arguments.length == 1) {
+      this._obsSet.apply(this, arguments)
+    } else {
+      this._arraySet.apply(this, arguments)
+    }
     return this._list[index]
 }
 

@@ -3,14 +3,25 @@ var ObservArray = require("./index.js")
 var slice = Array.prototype.slice
 
 var ARRAY_METHODS = [
-    "concat", "slice", "every", "filter", "forEach", "indexOf",
-    "join", "lastIndexOf", "map", "reduce", "reduceRight",
-    "some", "toString", "toLocaleString"
+    "get","set",
+    "count", "join", "reduce", "reduceRight", "every", "some",
+    "toString", "find", "findKey", "findLast", "findLastKey",
+    "flip", "map", "mapKeys", "filter", "slice", "forEach",
+    "indexOf", "lastIndexOf", "findIndex", "findLastIndex",
+    "splice", "concat", "reverse",
+    "take", "takeLast", "takeWhile", "takeUntil",
+    "skip", "skipLast", "skipWhile", "skipUntil",
+    "groupBy", "sort", "sortBy", "map",
+    "delete", "clear",
+    "push", "pop", "unshift",
+    "update", "updateIn",
+    "merge", "mergeWith", "deepMerge", "deepMergeWith",
+    "setLength", "iterator",
 ]
 
 var methods = ARRAY_METHODS.map(function (name) {
     return [name, function () {
-        var res = this._list[name].apply(this._list, arguments)
+        var res = this._vector[name].apply(this._vector, arguments)
 
         if (res && Array.isArray(res)) {
             res = ObservArray(res)
@@ -23,43 +34,8 @@ var methods = ARRAY_METHODS.map(function (name) {
 module.exports = ArrayMethods
 
 function ArrayMethods(obs) {
-    obs.push = observArrayPush
-    obs.pop = observArrayPop
-    obs.shift = observArrayShift
-    obs.unshift = observArrayUnshift
-    obs.reverse = notImplemented
-    obs.sort = notImplemented
-
     methods.forEach(function (tuple) {
         obs[tuple[0]] = tuple[1]
     })
     return obs
-}
-
-
-
-function observArrayPush() {
-    var args = slice.call(arguments)
-    args.unshift(this._list.length, 0)
-    this.splice.apply(this, args)
-
-    return this._list.length
-}
-function observArrayPop() {
-    return this.splice(this._list.length - 1, 1)[0]
-}
-function observArrayShift() {
-    return this.splice(0, 1)[0]
-}
-function observArrayUnshift() {
-    var args = slice.call(arguments)
-    args.unshift(0, 0)
-    this.splice.apply(this, args)
-
-    return this._list.length
-}
-
-
-function notImplemented() {
-    throw new Error("Pull request welcome")
 }

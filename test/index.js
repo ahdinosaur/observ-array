@@ -21,7 +21,7 @@ test("ObservArray contains correct initial value", function (assert) {
     assert.equal(typeof arr.filter, "function")
     assert.equal(typeof arr.splice, "function")
     assert.equal(initial.length, 4)
-    assert.deepEqual(initial, ["foo", "bar", "baz", "foobar"])
+    assert.deepEqual(initial.toArray(), ["foo", "bar", "baz", "foobar"])
 
     assert.equal(arr[0], undefined)
     assert.equal(arr[1], undefined)
@@ -243,7 +243,7 @@ test("can remove values to observ & not blow up", function (assert) {
     assert.end()
 })
 
-test("can use put to override existing value", function (assert) {
+test("can use set to override existing value", function (assert) {
     var arr = ObservArray([ Observ("foo"), Observ("bar") ])
     var changes = []
 
@@ -251,8 +251,8 @@ test("can use put to override existing value", function (assert) {
         changes.push(state)
     })
 
-    arr.put(0, Observ("baz"))
-    arr.put(1, Observ("foobar"))
+    arr.set(0, Observ("baz"))
+    arr.set(1, Observ("foobar"))
 
     assert.equal(changes.length, 2)
     assert.deepEqual(changes[0].slice(), ["baz", "bar"])
@@ -263,7 +263,7 @@ test("can use put to override existing value", function (assert) {
     assert.end()
 })
 
-test("can put values into array beyond length", function (assert) {
+test("can set values into array beyond length", function (assert) {
     var arr = ObservArray([ Observ("foo"), Observ("bar") ])
     var changes = []
 
@@ -272,7 +272,7 @@ test("can put values into array beyond length", function (assert) {
     })
 
     var baz = Observ("baz")
-    arr.put(4, baz)
+    arr.set(4, baz)
 
     baz.set("foobaz")
 
